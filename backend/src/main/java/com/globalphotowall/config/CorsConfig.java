@@ -19,6 +19,7 @@ public class CorsConfig {
         // Allow any localhost port during local development (Vite may use 5173, 5174, etc.)
         config.addAllowedOriginPattern("http://localhost:*");
         config.addAllowedOriginPattern("http://127.0.0.1:*");
+        config.addAllowedOriginPattern("https://*.vercel.app");
 
         String origins = appProperties.getCors().getAllowedOrigins();
         if (origins != null && !origins.isBlank()) {
