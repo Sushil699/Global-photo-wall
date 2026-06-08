@@ -23,6 +23,13 @@ function PhotoCard({ photo, shouldLoad, onLoadComplete }) {
     }
   };
 
+  // Ref callback to check if image is already cached/completed loading
+  const imageRefCallback = (el) => {
+    if (el && el.complete && !isLoaded) {
+      handleImageLoad();
+    }
+  };
+
   return (
     <article className="photo-card">
       <Link to={`/photo/${photo.photoId}`} className="photo-card-link">
@@ -35,12 +42,12 @@ function PhotoCard({ photo, shouldLoad, onLoadComplete }) {
           
           {shouldLoad && (
             <img
+              ref={imageRefCallback}
               src={photo.imageUrl}
               alt={`Photo ${photo.photoId}`}
               className={`photo-card-image ${isLoaded ? 'loaded' : ''}`}
               onLoad={handleImageLoad}
               onError={handleImageError}
-              loading="lazy"
             />
           )}
           

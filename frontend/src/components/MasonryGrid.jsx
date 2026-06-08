@@ -1,12 +1,23 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import PhotoCard from './PhotoCard';
+
+// Limit concurrent image requests to prevent server spikes, while avoiding queue blockages
+const CONCURRENT_LOAD_LIMIT = 4;
 
 function MasonryGrid({ photos }) {
   const [maxLoadedIndex, setMaxLoadedIndex] = useState(0);
+  const prevFirstPhotoIdRef = useRef(null);
 
-  // Reset sequential loader queue whenever photos change
+  // Reset sequential loader queue only when a new list is fetched (e.g. category switch or search)
+  // Do NOT reset when more photos are appended to the end of the list (infinite scrolling)
   useEffect(() => {
-    setMaxLoadedIndex(0);
+    const firstPhoto = photos[0];
+    const firstPhotoId = firstPhoto ? firstPhoto.photoId : null;
+
+    if (!firstPhotoId || firstPhotoId !== prevFirstPhotoIdRef.current) {
+      setMaxLoadedIndex(0);
+    }
+    prevFirstPhotoIdRef.current = firstPhotoId;
   }, [photos]);
 
   const handleLoadComplete = useCallback((index) => {
@@ -28,7 +39,7 @@ function MasonryGrid({ photos }) {
         <PhotoCard
           key={photo.photoId}
           photo={photo}
-          shouldLoad={index <= maxLoadedIndex}
+          shouldLoad={index <= maxLoadedIndex + CONCURRENT_LOAD_LIMIT - 1}
           onLoadComplete={() => handleLoadComplete(index)}
         />
       ))}
